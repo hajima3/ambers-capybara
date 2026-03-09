@@ -771,8 +771,8 @@
 
     <!-- Hidden Images -->
     <div class="hidden-images">
-        <img id="img1" src="img 1.png" crossorigin="anonymous">
-        <img id="img2" src="img 2.jpg" crossorigin="anonymous">
+        <img id="img1" src="img1.png" crossorigin="anonymous">
+        <img id="img2" src="img2.jpg" crossorigin="anonymous">
     </div>
 
     <script>
@@ -1726,13 +1726,17 @@
 
         PORTRAITS.forEach(portrait => {
             const img = document.getElementById(portrait.imgId);
-            if (img.complete) {
+            if (img.complete && img.naturalWidth > 0) {
                 setupCanvas(portrait);
                 checkAllLoaded();
             } else {
                 img.onload = () => {
                     setupCanvas(portrait);
                     checkAllLoaded();
+                };
+                img.onerror = () => {
+                    console.error('Failed to load:', portrait.imgId);
+                    checkAllLoaded(); // Continue anyway
                 };
             }
         });
