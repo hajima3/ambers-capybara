@@ -771,8 +771,8 @@
 
     <!-- Hidden Images -->
     <div class="hidden-images">
-        <img id="img1" src="img1.png" crossorigin="anonymous">
-        <img id="img2" src="img2.jpg" crossorigin="anonymous">
+        <img id="img1" src="img1.png">
+        <img id="img2" src="img2.jpg">
     </div>
 
     <script>
@@ -1690,33 +1690,24 @@
         const loaderProgress = document.getElementById('loaderProgress');
         let loadedCount = 0;
 
+        function hideLoader() {
+            loader.style.transition = 'opacity 0.8s ease';
+            loader.style.opacity = '0';
+            setTimeout(() => { loader.classList.add('hidden'); }, 800);
+            try { gsap.to('.nav', { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }); } catch(e) {}
+        }
+
+        // Guaranteed fallback — hide loader after 5 seconds no matter what
+        const loaderTimeout = setTimeout(hideLoader, 5000);
+
         function checkAllLoaded() {
             loadedCount++;
             loaderProgress.style.width = `${(loadedCount / PORTRAITS.length) * 100}%`;
 
             if (loadedCount >= PORTRAITS.length) {
-                gsap.to(loaderProgress, { width: '100%', duration: 0.3 });
-                
-                setTimeout(() => {
-                    gsap.to('#loader', {
-                        opacity: 0,
-                        duration: 0.8,
-                        ease: 'power2.inOut',
-                        onComplete: () => {
-                            loader.classList.add('hidden');
-                            
-                            // Trigger entrance animations
-                            gsap.to('.nav', { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' });
-                            
-                            // Play ambient sound after interaction
-                            document.addEventListener('click', () => {
-                                if (soundEnabled && !sounds.ambient.playing()) {
-                                    sounds.ambient.play();
-                                }
-                            }, { once: true });
-                        }
-                    });
-                }, 500);
+                clearTimeout(loaderTimeout);
+                loaderProgress.style.width = '100%';
+                setTimeout(hideLoader, 500);
             }
         }
 
