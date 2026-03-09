@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AMBER RUBIO CALDERON</title>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
         
@@ -270,6 +274,37 @@
         .mode-btn.warm { background: linear-gradient(135deg, #f5af19, #f12711); }
         .mode-btn.cool { background: linear-gradient(135deg, #00c6ff, #0072ff); }
         .mode-btn.matrix { background: linear-gradient(135deg, #003300, #00ff00); }
+        .mode-btn.sunset { background: linear-gradient(135deg, #ff6b6b, #feca57, #ff9ff3); }
+        .mode-btn.ocean { background: linear-gradient(135deg, #0abdc6, #133e7c, #1e3799); }
+        .mode-btn.neon { background: linear-gradient(135deg, #f706cf, #00fff0); }
+        .mode-btn.sepia { background: linear-gradient(135deg, #704214, #c4a35a); }
+        .mode-btn.cyber { background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff); }
+        .mode-btn.forest { background: linear-gradient(135deg, #134e5e, #71b280); }
+        .mode-btn.fire { background: linear-gradient(135deg, #f12711, #f5af19, #f12711); }
+        .mode-btn.ice { background: linear-gradient(135deg, #83a4d4, #b6fbff); }
+
+        /* 3D Background Canvas */
+        #threejs-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .mode-selector {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            z-index: 10;
+            max-width: 180px;
+            justify-content: flex-end;
+        }
 
         /* Scroll indicator */
         .scroll-indicator {
@@ -346,6 +381,9 @@
         </div>
     </div>
 
+    <!-- 3D Background -->
+    <canvas id="threejs-canvas"></canvas>
+
     <!-- Particle Background -->
     <canvas id="particleCanvas"></canvas>
 
@@ -367,11 +405,19 @@
             <canvas id="canvas1"></canvas>
             
             <div class="mode-selector">
-                <div class="mode-btn bw active" data-canvas="1" data-mode="bw"></div>
-                <div class="mode-btn gradient" data-canvas="1" data-mode="gradient"></div>
-                <div class="mode-btn warm" data-canvas="1" data-mode="warm"></div>
-                <div class="mode-btn cool" data-canvas="1" data-mode="cool"></div>
-                <div class="mode-btn matrix" data-canvas="1" data-mode="matrix"></div>
+                <div class="mode-btn bw active" data-canvas="1" data-mode="bw" title="Black & White"></div>
+                <div class="mode-btn gradient" data-canvas="1" data-mode="gradient" title="Gradient"></div>
+                <div class="mode-btn warm" data-canvas="1" data-mode="warm" title="Warm"></div>
+                <div class="mode-btn cool" data-canvas="1" data-mode="cool" title="Cool"></div>
+                <div class="mode-btn matrix" data-canvas="1" data-mode="matrix" title="Matrix"></div>
+                <div class="mode-btn sunset" data-canvas="1" data-mode="sunset" title="Sunset"></div>
+                <div class="mode-btn ocean" data-canvas="1" data-mode="ocean" title="Ocean"></div>
+                <div class="mode-btn neon" data-canvas="1" data-mode="neon" title="Neon"></div>
+                <div class="mode-btn sepia" data-canvas="1" data-mode="sepia" title="Sepia"></div>
+                <div class="mode-btn cyber" data-canvas="1" data-mode="cyber" title="Cyber"></div>
+                <div class="mode-btn forest" data-canvas="1" data-mode="forest" title="Forest"></div>
+                <div class="mode-btn fire" data-canvas="1" data-mode="fire" title="Fire"></div>
+                <div class="mode-btn ice" data-canvas="1" data-mode="ice" title="Ice"></div>
             </div>
             
             <div class="canvas-controls">
@@ -397,11 +443,19 @@
             <canvas id="canvas2"></canvas>
             
             <div class="mode-selector">
-                <div class="mode-btn bw active" data-canvas="2" data-mode="bw"></div>
-                <div class="mode-btn gradient" data-canvas="2" data-mode="gradient"></div>
-                <div class="mode-btn warm" data-canvas="2" data-mode="warm"></div>
-                <div class="mode-btn cool" data-canvas="2" data-mode="cool"></div>
-                <div class="mode-btn matrix" data-canvas="2" data-mode="matrix"></div>
+                <div class="mode-btn bw active" data-canvas="2" data-mode="bw" title="Black & White"></div>
+                <div class="mode-btn gradient" data-canvas="2" data-mode="gradient" title="Gradient"></div>
+                <div class="mode-btn warm" data-canvas="2" data-mode="warm" title="Warm"></div>
+                <div class="mode-btn cool" data-canvas="2" data-mode="cool" title="Cool"></div>
+                <div class="mode-btn matrix" data-canvas="2" data-mode="matrix" title="Matrix"></div>
+                <div class="mode-btn sunset" data-canvas="2" data-mode="sunset" title="Sunset"></div>
+                <div class="mode-btn ocean" data-canvas="2" data-mode="ocean" title="Ocean"></div>
+                <div class="mode-btn neon" data-canvas="2" data-mode="neon" title="Neon"></div>
+                <div class="mode-btn sepia" data-canvas="2" data-mode="sepia" title="Sepia"></div>
+                <div class="mode-btn cyber" data-canvas="2" data-mode="cyber" title="Cyber"></div>
+                <div class="mode-btn forest" data-canvas="2" data-mode="forest" title="Forest"></div>
+                <div class="mode-btn fire" data-canvas="2" data-mode="fire" title="Fire"></div>
+                <div class="mode-btn ice" data-canvas="2" data-mode="ice" title="Ice"></div>
             </div>
             
             <div class="canvas-controls">
@@ -503,18 +557,37 @@
         // COLOR MODES
         // ============================================
         function getColor(gray, mode) {
+            const n = gray / 255; // normalized 0-1
             switch (mode) {
                 case 'bw':
                     return `rgb(${gray}, ${gray}, ${gray})`;
                 case 'gradient':
-                    const hue = (gray / 255) * 60 + 240;
-                    return `hsl(${hue}, 70%, ${20 + (gray / 255) * 60}%)`;
+                    const hue = n * 60 + 240;
+                    return `hsl(${hue}, 70%, ${20 + n * 60}%)`;
                 case 'warm':
                     return `rgb(${Math.min(255, gray + 80)}, ${Math.floor(gray * 0.6)}, ${Math.floor(gray * 0.3)})`;
                 case 'cool':
                     return `rgb(${Math.floor(gray * 0.3)}, ${Math.floor(gray * 0.7)}, ${Math.min(255, gray + 50)})`;
                 case 'matrix':
                     return `rgb(0, ${gray}, 0)`;
+                case 'sunset':
+                    return `rgb(${Math.min(255, 255 - gray * 0.3)}, ${Math.floor(100 + n * 100)}, ${Math.floor(n * 200 + 50)})`;
+                case 'ocean':
+                    return `rgb(${Math.floor(n * 50)}, ${Math.floor(80 + n * 100)}, ${Math.min(255, 150 + gray * 0.5)})`;
+                case 'neon':
+                    const neonHue = (n * 180 + 280) % 360;
+                    return `hsl(${neonHue}, 100%, ${30 + n * 40}%)`;
+                case 'sepia':
+                    return `rgb(${Math.min(255, gray + 50)}, ${Math.floor(gray * 0.85 + 30)}, ${Math.floor(gray * 0.6)})`;
+                case 'cyber':
+                    const cyberHue = n * 60 + (n > 0.5 ? 180 : 300);
+                    return `hsl(${cyberHue}, 90%, ${25 + n * 50}%)`;
+                case 'forest':
+                    return `rgb(${Math.floor(30 + n * 60)}, ${Math.floor(80 + n * 120)}, ${Math.floor(50 + n * 80)})`;
+                case 'fire':
+                    return `rgb(${Math.min(255, 180 + gray * 0.3)}, ${Math.floor(n * 180)}, ${Math.floor(n * 50)})`;
+                case 'ice':
+                    return `rgb(${Math.floor(180 + n * 75)}, ${Math.floor(200 + n * 55)}, ${Math.min(255, 220 + gray * 0.15)})`;
                 default:
                     return `rgb(${gray}, ${gray}, ${gray})`;
             }
@@ -809,6 +882,219 @@
         });
 
         window.addEventListener('resize', resizeParticleCanvas);
+
+        // ============================================
+        // THREE.JS 3D CAPYBARA ANIMATION
+        // ============================================
+        (function initThreeJS() {
+            const threeCanvas = document.getElementById('threejs-canvas');
+            
+            // Scene setup
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 30;
+            camera.position.y = 5;
+
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: threeCanvas, 
+                alpha: true,
+                antialias: true 
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x667eea, 0.4);
+            scene.add(ambientLight);
+
+            const pointLight1 = new THREE.PointLight(0xf093fb, 1, 100);
+            pointLight1.position.set(20, 20, 20);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0x00c6ff, 0.8, 100);
+            pointLight2.position.set(-20, -10, 20);
+            scene.add(pointLight2);
+
+            // Capybara group
+            const capybaraGroup = new THREE.Group();
+            scene.add(capybaraGroup);
+
+            // Materials
+            const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8B6914,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+
+            const darkMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x3d2e0a,
+                roughness: 0.9
+            });
+
+            const eyeMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x111111,
+                roughness: 0.3
+            });
+
+            const noseMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2a1f0a,
+                roughness: 0.5
+            });
+
+            // Body
+            const bodyGeom = new THREE.SphereGeometry(3, 32, 32);
+            bodyGeom.scale(1.4, 0.9, 1);
+            const body = new THREE.Mesh(bodyGeom, bodyMaterial);
+            capybaraGroup.add(body);
+
+            // Head
+            const headGeom = new THREE.SphereGeometry(1.8, 32, 32);
+            headGeom.scale(1.2, 1, 1);
+            const head = new THREE.Mesh(headGeom, bodyMaterial);
+            head.position.set(3.5, 0.8, 0);
+            capybaraGroup.add(head);
+
+            // Snout
+            const snoutGeom = new THREE.SphereGeometry(1, 24, 24);
+            snoutGeom.scale(1.3, 0.8, 0.9);
+            const snout = new THREE.Mesh(snoutGeom, bodyMaterial);
+            snout.position.set(5, 0.3, 0);
+            capybaraGroup.add(snout);
+
+            // Nose
+            const noseGeom = new THREE.SphereGeometry(0.4, 16, 16);
+            noseGeom.scale(1.2, 0.8, 1);
+            const nose = new THREE.Mesh(noseGeom, noseMaterial);
+            nose.position.set(6, 0.5, 0);
+            capybaraGroup.add(nose);
+
+            // Eyes
+            const eyeGeom = new THREE.SphereGeometry(0.25, 16, 16);
+            const leftEye = new THREE.Mesh(eyeGeom, eyeMaterial);
+            leftEye.position.set(4.5, 1.5, 1);
+            capybaraGroup.add(leftEye);
+
+            const rightEye = new THREE.Mesh(eyeGeom, eyeMaterial);
+            rightEye.position.set(4.5, 1.5, -1);
+            capybaraGroup.add(rightEye);
+
+            // Ears
+            const earGeom = new THREE.SphereGeometry(0.4, 16, 16);
+            earGeom.scale(1, 0.6, 0.4);
+            
+            const leftEar = new THREE.Mesh(earGeom, darkMaterial);
+            leftEar.position.set(3, 2.3, 1.2);
+            capybaraGroup.add(leftEar);
+
+            const rightEar = new THREE.Mesh(earGeom, darkMaterial);
+            rightEar.position.set(3, 2.3, -1.2);
+            capybaraGroup.add(rightEar);
+
+            // Legs
+            const legGeom = new THREE.CylinderGeometry(0.4, 0.35, 2, 16);
+            const legs = [];
+            const legPositions = [
+                { x: 2, z: 1.5 },
+                { x: 2, z: -1.5 },
+                { x: -2, z: 1.5 },
+                { x: -2, z: -1.5 }
+            ];
+
+            legPositions.forEach((pos, i) => {
+                const leg = new THREE.Mesh(legGeom, darkMaterial);
+                leg.position.set(pos.x, -2.2, pos.z);
+                legs.push(leg);
+                capybaraGroup.add(leg);
+            });
+
+            // Position capybara
+            capybaraGroup.position.x = -40;
+            capybaraGroup.position.y = -8;
+            capybaraGroup.scale.set(0.8, 0.8, 0.8);
+
+            // Animation variables
+            let runCycle = 0;
+            let capybaraX = -40;
+            const runSpeed = 0.08;
+
+            // Mouse tracking
+            let mouseX = 0;
+            let mouseY = 0;
+            document.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            // GSAP entrance animation
+            gsap.fromTo(capybaraGroup.position, 
+                { x: -40 },
+                { x: -25, duration: 2, ease: 'power2.out', delay: 1 }
+            );
+
+            gsap.to(pointLight1, {
+                intensity: 1.5,
+                duration: 2,
+                repeat: -1,
+                yoyo: true,
+                ease: 'sine.inOut'
+            });
+
+            gsap.to(pointLight2, {
+                intensity: 1.2,
+                duration: 3,
+                repeat: -1,
+                yoyo: true,
+                ease: 'sine.inOut'
+            });
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                runCycle += runSpeed;
+
+                // Running animation
+                capybaraX += 0.03;
+                if (capybaraX > 50) capybaraX = -40;
+                capybaraGroup.position.x = capybaraX;
+
+                // Body bob
+                capybaraGroup.position.y = -8 + Math.sin(runCycle * 2) * 0.3;
+                capybaraGroup.rotation.z = Math.sin(runCycle * 2) * 0.03;
+
+                // Leg animation (running)
+                legs.forEach((leg, i) => {
+                    const offset = i < 2 ? 0 : Math.PI; // Front vs back legs
+                    const sideOffset = i % 2 === 0 ? 0 : Math.PI; // Left vs right
+                    leg.rotation.x = Math.sin(runCycle * 2 + offset + sideOffset * 0.5) * 0.5;
+                    leg.position.y = -2.2 + Math.abs(Math.sin(runCycle * 2 + offset + sideOffset * 0.5)) * 0.3;
+                });
+
+                // Head slight movement
+                head.rotation.y = Math.sin(runCycle) * 0.1;
+                head.position.y = 0.8 + Math.sin(runCycle * 2) * 0.1;
+
+                // Ear wiggle
+                leftEar.rotation.z = Math.sin(runCycle * 3) * 0.2;
+                rightEar.rotation.z = -Math.sin(runCycle * 3) * 0.2;
+
+                // Camera subtle movement based on mouse
+                camera.position.x += (mouseX * 3 - camera.position.x) * 0.02;
+                camera.position.y += (mouseY * 2 + 5 - camera.position.y) * 0.02;
+                camera.lookAt(0, 0, 0);
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            // Resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        })();
     </script>
 </body>
 </html>
