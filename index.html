@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AMBER RUBIO CALDERON</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -12,277 +14,739 @@
         }
 
         body {
-            background: #000;
+            background: #0a0a0f;
             min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Space Mono', monospace;
+        }
+
+        /* Loading Screen */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #0a0a0f;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow: hidden;
-            font-family: 'Courier New', monospace;
-        }
-
-        .controls {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            display: flex;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px 25px;
-            border-radius: 50px;
-            border: 1px solid #333;
-        }
-
-        .controls button {
-            background: #222;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 10px 20px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-        }
-
-        .controls button:hover {
-            background: #444;
-            border-color: #666;
-        }
-
-        .zoom-level {
-            color: #fff;
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            font-size: 0.9rem;
-        }
-
-        .instructions {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #666;
-            font-size: 0.85rem;
-            z-index: 100;
-            text-align: center;
-        }
-
-        #canvas-container {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            cursor: grab;
-            display: flex;
-            align-items: center;
             justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
         }
 
-        #canvas-container:active {
+        #loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-text {
+            font-size: 1.5rem;
+            color: #fff;
+            letter-spacing: 8px;
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .loader-bar {
+            width: 200px;
+            height: 2px;
+            background: #222;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loader-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Main Canvas */
+        #artCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            cursor: grab;
+        }
+
+        #artCanvas:active {
             cursor: grabbing;
         }
 
-        #text-art {
-            white-space: pre;
-            font-family: 'Courier New', monospace;
-            font-size: 4px;
-            line-height: 4px;
-            letter-spacing: 0px;
-            transform-origin: center center;
-            transition: transform 0.1s ease-out;
-            user-select: none;
+        /* Particle Canvas */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            opacity: 0.6;
         }
 
-        #hidden-canvas, #source-img {
+        /* UI Controls */
+        .ui-layer {
+            position: fixed;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .ui-layer.visible {
+            opacity: 1;
+        }
+
+        /* Header */
+        .header {
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 25px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(10,10,15,0.9) 0%, transparent 100%);
+        }
+
+        .logo {
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #667eea, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 10px 18px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: transparent;
+        }
+
+        /* Zoom indicator */
+        .zoom-display {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .zoom-track {
+            width: 2px;
+            height: 150px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .zoom-thumb {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: bottom 0.2s ease;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .zoom-label {
+            color: #666;
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        /* Footer */
+        .footer {
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 25px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to top, rgba(10,10,15,0.9) 0%, transparent 100%);
+        }
+
+        .instructions {
+            color: #444;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+        }
+
+        .instructions kbd {
+            background: rgba(255,255,255,0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 0 3px;
+        }
+
+        .credit {
+            color: #666;
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+        }
+
+        .credit a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        /* Color mode indicator */
+        .mode-indicator {
+            position: fixed;
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mode-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-dot:hover {
+            transform: scale(1.5);
+        }
+
+        .mode-dot.active {
+            box-shadow: 0 0 15px currentColor;
+        }
+
+        .mode-dot.bw { background: #fff; }
+        .mode-dot.gradient { background: linear-gradient(135deg, #667eea, #f093fb); }
+        .mode-dot.warm { background: linear-gradient(135deg, #f5af19, #f12711); }
+        .mode-dot.cool { background: linear-gradient(135deg, #00c6ff, #0072ff); }
+        .mode-dot.matrix { background: #0f0; }
+
+        /* Hidden elements */
+        #sourceImg {
             display: none;
         }
 
-        .loading {
-            color: #fff;
-            font-size: 1.5rem;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header, .footer {
+                padding: 15px 20px;
+            }
+            
+            .zoom-display {
+                right: 15px;
+            }
+            
+            .mode-indicator {
+                left: 15px;
+            }
+            
+            .instructions {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <button id="zoom-out">-</button>
-        <span class="zoom-level">Zoom: <span id="zoom-value">100</span>%</span>
-        <button id="zoom-in">+</button>
-        <button id="reset">Reset</button>
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="loader-text">AMBER RUBIO CALDERON</div>
+        <div class="loader-bar">
+            <div class="loader-progress" id="loaderProgress"></div>
+        </div>
     </div>
 
-    <div class="instructions">
-        Scroll to zoom | Drag to pan | Made for Amber Rubio Calderon
+    <!-- Particle Background -->
+    <canvas id="particleCanvas"></canvas>
+    
+    <!-- Main Art Canvas -->
+    <canvas id="artCanvas"></canvas>
+
+    <!-- UI Layer - Header -->
+    <header class="ui-layer header">
+        <div class="logo"><span>AMBER</span> RUBIO CALDERON</div>
+        <div class="controls">
+            <button class="btn" id="resetBtn">RESET</button>
+            <button class="btn" id="downloadBtn">SAVE</button>
+        </div>
+    </header>
+
+    <!-- Zoom Display -->
+    <div class="ui-layer zoom-display">
+        <span class="zoom-label">ZOOM</span>
+        <div class="zoom-track">
+            <div class="zoom-thumb" id="zoomThumb"></div>
+        </div>
+        <span class="zoom-label" id="zoomPercent">100%</span>
     </div>
 
-    <div id="canvas-container">
-        <div id="text-art"></div>
+    <!-- Color Mode Selector -->
+    <div class="ui-layer mode-indicator">
+        <div class="mode-dot bw active" data-mode="bw" title="Black & White"></div>
+        <div class="mode-dot gradient" data-mode="gradient" title="Gradient"></div>
+        <div class="mode-dot warm" data-mode="warm" title="Warm"></div>
+        <div class="mode-dot cool" data-mode="cool" title="Cool"></div>
+        <div class="mode-dot matrix" data-mode="matrix" title="Matrix"></div>
     </div>
 
-    <img id="source-img" src="img 1.jpg" crossorigin="anonymous">
-    <canvas id="hidden-canvas"></canvas>
+    <!-- Footer -->
+    <footer class="ui-layer footer">
+        <div class="instructions">
+            <kbd>Scroll</kbd> zoom <kbd>Drag</kbd> pan <kbd>R</kbd> reset
+        </div>
+        <div class="credit">Text Portrait Art</div>
+    </footer>
 
-    <div class="loading" id="loading">Loading...</div>
+    <!-- Source Image -->
+    <img id="sourceImg" src="img 1.jpg" crossorigin="anonymous">
 
     <script>
-        const text = "AMBER RUBIO CALDERON ";
-        const img = document.getElementById('source-img');
-        const canvas = document.getElementById('hidden-canvas');
-        const ctx = canvas.getContext('2d');
-        const textArt = document.getElementById('text-art');
-        const container = document.getElementById('canvas-container');
-        const loading = document.getElementById('loading');
-        const zoomValue = document.getElementById('zoom-value');
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const CONFIG = {
+            text: 'AMBER RUBIO CALDERON ',
+            fontSize: 10,
+            resolution: 180,
+            minZoom: 0.3,
+            maxZoom: 15,
+            particleCount: 50
+        };
 
-        let scale = 1;
-        let translateX = 0;
-        let translateY = 0;
-        let isDragging = false;
-        let startX, startY;
+        // ============================================
+        // STATE
+        // ============================================
+        const state = {
+            scale: 1,
+            offsetX: 0,
+            offsetY: 0,
+            isDragging: false,
+            dragStart: { x: 0, y: 0 },
+            colorMode: 'bw',
+            imageData: null,
+            textGrid: [],
+            loaded: false
+        };
 
-        img.onload = function() {
-            // Set canvas size based on image
-            const maxWidth = 200; // characters width
-            const ratio = img.height / img.width;
-            const width = maxWidth;
-            const height = Math.floor(maxWidth * ratio * 0.5); // 0.5 because chars are taller than wide
+        // ============================================
+        // CANVAS SETUP
+        // ============================================
+        const artCanvas = document.getElementById('artCanvas');
+        const artCtx = artCanvas.getContext('2d');
+        const particleCanvas = document.getElementById('particleCanvas');
+        const particleCtx = particleCanvas.getContext('2d');
+        const sourceImg = document.getElementById('sourceImg');
 
-            canvas.width = width;
-            canvas.height = height;
+        function resizeCanvases() {
+            artCanvas.width = window.innerWidth;
+            artCanvas.height = window.innerHeight;
+            particleCanvas.width = window.innerWidth;
+            particleCanvas.height = window.innerHeight;
+            if (state.loaded) render();
+        }
 
-            // Draw image to canvas
-            ctx.drawImage(img, 0, 0, width, height);
+        window.addEventListener('resize', resizeCanvases);
+        resizeCanvases();
 
-            // Get image data
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const pixels = imageData.data;
+        // ============================================
+        // PARTICLES
+        // ============================================
+        class Particle {
+            constructor() {
+                this.reset();
+            }
 
-            // Convert to text
-            let result = '';
+            reset() {
+                this.x = Math.random() * particleCanvas.width;
+                this.y = Math.random() * particleCanvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0 || this.x > particleCanvas.width ||
+                    this.y < 0 || this.y > particleCanvas.height) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                particleCtx.beginPath();
+                particleCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                particleCtx.fillStyle = `rgba(102, 126, 234, ${this.opacity})`;
+                particleCtx.fill();
+            }
+        }
+
+        const particles = Array.from({ length: CONFIG.particleCount }, () => new Particle());
+
+        function animateParticles() {
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        animateParticles();
+
+        // ============================================
+        // IMAGE PROCESSING
+        // ============================================
+        function processImage() {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            const ratio = sourceImg.height / sourceImg.width;
+            const width = CONFIG.resolution;
+            const height = Math.floor(CONFIG.resolution * ratio * 0.55);
+
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            tempCtx.drawImage(sourceImg, 0, 0, width, height);
+
+            const imageData = tempCtx.getImageData(0, 0, width, height);
+            state.imageData = imageData;
+            state.gridWidth = width;
+            state.gridHeight = height;
+
+            // Pre-calculate text grid
+            state.textGrid = [];
             let textIndex = 0;
 
             for (let y = 0; y < height; y++) {
+                const row = [];
                 for (let x = 0; x < width; x++) {
                     const i = (y * width + x) * 4;
-                    const r = pixels[i];
-                    const g = pixels[i + 1];
-                    const b = pixels[i + 2];
-                    
-                    // Convert to grayscale
+                    const r = imageData.data[i];
+                    const g = imageData.data[i + 1];
+                    const b = imageData.data[i + 2];
                     const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                    
-                    // Map brightness to character visibility
-                    const brightness = gray / 255;
-                    
-                    // Get next character from our text
-                    const char = text[textIndex % text.length];
+
+                    row.push({
+                        char: CONFIG.text[textIndex % CONFIG.text.length],
+                        gray: gray,
+                        r: r,
+                        g: g,
+                        b: b
+                    });
                     textIndex++;
-                    
-                    // Create colored span based on brightness
-                    const grayColor = Math.floor(gray);
-                    result += `<span style="color: rgb(${grayColor},${grayColor},${grayColor})">${char}</span>`;
                 }
-                result += '\n';
+                state.textGrid.push(row);
             }
 
-            textArt.innerHTML = result;
-            loading.style.display = 'none';
-        };
+            // Center the art
+            const artWidth = width * CONFIG.fontSize * 0.6;
+            const artHeight = height * CONFIG.fontSize;
+            state.offsetX = (artCanvas.width - artWidth) / 2;
+            state.offsetY = (artCanvas.height - artHeight) / 2;
 
-        // Zoom controls
-        function updateTransform() {
-            textArt.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-            zoomValue.textContent = Math.round(scale * 100);
+            state.loaded = true;
         }
 
-        document.getElementById('zoom-in').addEventListener('click', () => {
-            scale = Math.min(scale * 1.2, 20);
-            updateTransform();
-        });
+        // ============================================
+        // COLOR MODES
+        // ============================================
+        function getColor(cell) {
+            const { gray, r, g, b } = cell;
+            
+            switch (state.colorMode) {
+                case 'bw':
+                    return `rgb(${gray}, ${gray}, ${gray})`;
+                
+                case 'gradient':
+                    const hue = (gray / 255) * 60 + 240; // Purple to pink
+                    return `hsl(${hue}, 70%, ${20 + (gray / 255) * 60}%)`;
+                
+                case 'warm':
+                    return `rgb(${Math.min(255, gray + 80)}, ${Math.floor(gray * 0.6)}, ${Math.floor(gray * 0.3)})`;
+                
+                case 'cool':
+                    return `rgb(${Math.floor(gray * 0.3)}, ${Math.floor(gray * 0.7)}, ${Math.min(255, gray + 50)})`;
+                
+                case 'matrix':
+                    return `rgb(0, ${gray}, 0)`;
+                
+                default:
+                    return `rgb(${gray}, ${gray}, ${gray})`;
+            }
+        }
 
-        document.getElementById('zoom-out').addEventListener('click', () => {
-            scale = Math.max(scale / 1.2, 0.5);
-            updateTransform();
-        });
+        // ============================================
+        // RENDERING
+        // ============================================
+        function render() {
+            if (!state.loaded) return;
 
-        document.getElementById('reset').addEventListener('click', () => {
-            scale = 1;
-            translateX = 0;
-            translateY = 0;
-            updateTransform();
-        });
+            artCtx.clearRect(0, 0, artCanvas.width, artCanvas.height);
+            artCtx.save();
+            artCtx.translate(state.offsetX, state.offsetY);
+            artCtx.scale(state.scale, state.scale);
 
-        // Mouse wheel zoom
-        container.addEventListener('wheel', (e) => {
+            const fontSize = CONFIG.fontSize;
+            artCtx.font = `${fontSize}px "Space Mono", monospace`;
+            artCtx.textBaseline = 'top';
+
+            // Calculate visible area for optimization
+            const visibleLeft = -state.offsetX / state.scale;
+            const visibleTop = -state.offsetY / state.scale;
+            const visibleRight = (artCanvas.width - state.offsetX) / state.scale;
+            const visibleBottom = (artCanvas.height - state.offsetY) / state.scale;
+
+            const charWidth = fontSize * 0.6;
+            const startCol = Math.max(0, Math.floor(visibleLeft / charWidth));
+            const endCol = Math.min(state.gridWidth, Math.ceil(visibleRight / charWidth));
+            const startRow = Math.max(0, Math.floor(visibleTop / fontSize));
+            const endRow = Math.min(state.gridHeight, Math.ceil(visibleBottom / fontSize));
+
+            for (let y = startRow; y < endRow; y++) {
+                for (let x = startCol; x < endCol; x++) {
+                    const cell = state.textGrid[y][x];
+                    artCtx.fillStyle = getColor(cell);
+                    artCtx.fillText(cell.char, x * charWidth, y * fontSize);
+                }
+            }
+
+            artCtx.restore();
+            updateZoomUI();
+        }
+
+        // ============================================
+        // UI UPDATES
+        // ============================================
+        function updateZoomUI() {
+            const percent = Math.round(state.scale * 100);
+            document.getElementById('zoomPercent').textContent = `${percent}%`;
+            
+            const thumbPos = ((state.scale - CONFIG.minZoom) / (CONFIG.maxZoom - CONFIG.minZoom)) * 100;
+            document.getElementById('zoomThumb').style.bottom = `${Math.max(0, Math.min(100, thumbPos))}%`;
+        }
+
+        function showUI() {
+            document.querySelectorAll('.ui-layer').forEach(el => el.classList.add('visible'));
+        }
+
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+        
+        // Zoom
+        artCanvas.addEventListener('wheel', (e) => {
             e.preventDefault();
+            
+            const rect = artCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const worldX = (mouseX - state.offsetX) / state.scale;
+            const worldY = (mouseY - state.offsetY) / state.scale;
+            
             const delta = e.deltaY > 0 ? 0.9 : 1.1;
-            scale = Math.min(Math.max(scale * delta, 0.5), 20);
-            updateTransform();
+            const newScale = Math.max(CONFIG.minZoom, Math.min(CONFIG.maxZoom, state.scale * delta));
+            
+            state.offsetX = mouseX - worldX * newScale;
+            state.offsetY = mouseY - worldY * newScale;
+            state.scale = newScale;
+            
+            render();
         });
 
-        // Pan functionality
-        container.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.clientX - translateX;
-            startY = e.clientY - translateY;
+        // Pan
+        artCanvas.addEventListener('mousedown', (e) => {
+            state.isDragging = true;
+            state.dragStart.x = e.clientX - state.offsetX;
+            state.dragStart.y = e.clientY - state.offsetY;
         });
 
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            translateX = e.clientX - startX;
-            translateY = e.clientY - startY;
-            updateTransform();
+        window.addEventListener('mousemove', (e) => {
+            if (!state.isDragging) return;
+            state.offsetX = e.clientX - state.dragStart.x;
+            state.offsetY = e.clientY - state.dragStart.y;
+            render();
         });
 
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
+        window.addEventListener('mouseup', () => {
+            state.isDragging = false;
         });
 
         // Touch support
-        let lastTouchDistance = 0;
+        let lastTouchDist = 0;
+        let lastTouchCenter = { x: 0, y: 0 };
 
-        container.addEventListener('touchstart', (e) => {
+        artCanvas.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
-                isDragging = true;
-                startX = e.touches[0].clientX - translateX;
-                startY = e.touches[0].clientY - translateY;
+                state.isDragging = true;
+                state.dragStart.x = e.touches[0].clientX - state.offsetX;
+                state.dragStart.y = e.touches[0].clientY - state.offsetY;
             } else if (e.touches.length === 2) {
-                lastTouchDistance = Math.hypot(
+                lastTouchDist = Math.hypot(
                     e.touches[0].clientX - e.touches[1].clientX,
                     e.touches[0].clientY - e.touches[1].clientY
                 );
+                lastTouchCenter = {
+                    x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                    y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+                };
             }
         });
 
-        container.addEventListener('touchmove', (e) => {
+        artCanvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
-            if (e.touches.length === 1 && isDragging) {
-                translateX = e.touches[0].clientX - startX;
-                translateY = e.touches[0].clientY - startY;
-                updateTransform();
+            if (e.touches.length === 1 && state.isDragging) {
+                state.offsetX = e.touches[0].clientX - state.dragStart.x;
+                state.offsetY = e.touches[0].clientY - state.dragStart.y;
+                render();
             } else if (e.touches.length === 2) {
-                const distance = Math.hypot(
+                const dist = Math.hypot(
                     e.touches[0].clientX - e.touches[1].clientX,
                     e.touches[0].clientY - e.touches[1].clientY
                 );
-                if (lastTouchDistance > 0) {
-                    scale = Math.min(Math.max(scale * (distance / lastTouchDistance), 0.5), 20);
-                    updateTransform();
+                const center = {
+                    x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                    y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+                };
+
+                if (lastTouchDist > 0) {
+                    const scaleFactor = dist / lastTouchDist;
+                    const newScale = Math.max(CONFIG.minZoom, Math.min(CONFIG.maxZoom, state.scale * scaleFactor));
+                    
+                    const worldX = (center.x - state.offsetX) / state.scale;
+                    const worldY = (center.y - state.offsetY) / state.scale;
+                    
+                    state.offsetX = center.x - worldX * newScale;
+                    state.offsetY = center.y - worldY * newScale;
+                    state.scale = newScale;
+                    
+                    render();
                 }
-                lastTouchDistance = distance;
+
+                lastTouchDist = dist;
+                lastTouchCenter = center;
             }
         });
 
-        container.addEventListener('touchend', () => {
-            isDragging = false;
-            lastTouchDistance = 0;
+        artCanvas.addEventListener('touchend', () => {
+            state.isDragging = false;
+            lastTouchDist = 0;
         });
+
+        // Keyboard
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'r') {
+                resetView();
+            }
+        });
+
+        // Buttons
+        document.getElementById('resetBtn').addEventListener('click', resetView);
+        document.getElementById('downloadBtn').addEventListener('click', downloadImage);
+
+        // Color modes
+        document.querySelectorAll('.mode-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.mode-dot').forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+                state.colorMode = dot.dataset.mode;
+                render();
+            });
+        });
+
+        function resetView() {
+            state.scale = 1;
+            const artWidth = state.gridWidth * CONFIG.fontSize * 0.6;
+            const artHeight = state.gridHeight * CONFIG.fontSize;
+            state.offsetX = (artCanvas.width - artWidth) / 2;
+            state.offsetY = (artCanvas.height - artHeight) / 2;
+            render();
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'amber-rubio-calderon-portrait.png';
+            link.href = artCanvas.toDataURL();
+            link.click();
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        const loader = document.getElementById('loader');
+        const loaderProgress = document.getElementById('loaderProgress');
+
+        sourceImg.onload = function() {
+            loaderProgress.style.width = '100%';
+            
+            setTimeout(() => {
+                processImage();
+                render();
+                loader.classList.add('hidden');
+                setTimeout(showUI, 300);
+            }, 500);
+        };
+
+        // Simulate loading progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress >= 90) {
+                clearInterval(progressInterval);
+                progress = 90;
+            }
+            loaderProgress.style.width = `${progress}%`;
+        }, 100);
+
+        // Fallback if image already cached
+        if (sourceImg.complete) {
+            sourceImg.onload();
+        }
     </script>
 </body>
 </html>
